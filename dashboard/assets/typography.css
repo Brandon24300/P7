@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;900&family=Roboto:wght@300;400;700&display=swap');
+
+
+
+
+body{
+    background-color: #EFEFEF;
+    font-family: 'Roboto', sans-serif;
+}
+
+h1{
+    font-weight: lighter;
+}
+
+.n-global-stats{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    padding-top: 20px;
+}
+
+.n-global-stats .n-card{
+    width: 200px;
+    height: 135px;
+    display: flex;
+    flex-direction: column;
+}
+
+.n-card-wrapper{
+    padding: 1em;
+}
+
+.n-card{
+    background-color: #fff;
+    padding: 1em;
+}
+
+.n-card-title{
+    font-family: 'Poppins';
+    /* font-weight: bold; */
+    font-size: 14px;
+    color: #6f6f6f;
+}
+
+.n-card-value{
+    font-size: 2.0em;
+    margin-top: 1em;
+    font-family: 'Poppins';
+}
+
+.n-container-info-clients{
+    margin-top: 2em;
+}
+
+#table{
+    margin-top: 2em;
+}
+
+/* font-family: 'Poppins', sans-serif; */
+
+
+.n-tabs{
+    margin-top: 1em;
+}
+
+
+#test-dropdown{
+    margin-top: 2em;
+}
+
+.tab--selected span{
+    color: #1975FA;
+}
+
+
+.n-row{
+    display: flex;
+}
+
+.n-header{
+    display: flex;
+    align-items: center;
+}
+
+#demo-dropdown{
+    width: 250px;
+    margin-left: 4em;
+}
+
+.n-secteur{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1em;
+}
+
+
+.n-explication-model{
+    width: 800px;
+    height: 500px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-image: url("images/modele_explication.png");
+}

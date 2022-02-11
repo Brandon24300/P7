@@ -1,0 +1,30 @@
+
+Dédié partie modélisation
+
+Possibilité de parler du choix de nombre de variable 
+
+
+DIAPORAMA => Partie modélisation
+RAPPORT => modélisation
+
+
+Prochaine session =>
+
+1. FINIR DASHBOARD 4h
+
+2. FINIR Modélisation 2h
+
+3. Finir RAPPORT 
+
+Commencer DIAPORAMA 
+
+
+
+TIRER LES DONNEES DE MANIERE ALEATOIRE
+
+
+Partie interpretabilité 
+ 
+ MOYENNE DES VARIABLES POUR CHAQUE CATEGORIE 
+
+ OPTIMISER API ne retourner que les informations 
