@@ -10,14 +10,12 @@ from numpy.lib.utils import info
 import plotly.express as px
 import pandas as pd
 import requests
+import os
 import dash_table
 from dash.dependencies import Input, Output
 import numpy as np
 import plotly.graph_objects as go
-df4 = pd.DataFrame(dict(
-    r=[1, 5, 2, 2, 3],
-    theta=['processing cost','mechanical properties','chemical stability',
-           'thermal stability', 'device integration']))
+
 # fig = px.line_polar(df, r='r', theta='theta', line_close=True)
 
 app = dash.Dash(__name__)
@@ -411,4 +409,6 @@ def update_etoile_char(id_client):
     ajoutFigureEtoileNotreClient(etoile_figure, df_etoile3)
     return etoile_figure
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    port = int(os.environ.get("PORT", 8050))
+    print("avant lancement serveur dashboard sur le port " + str(port))
+    app.run_server(debug=False, port = port)
