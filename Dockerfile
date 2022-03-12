@@ -6,11 +6,6 @@ COPY . .
 
 RUN pip3 install -r requirements.txt
 
-EXPOSE 5000
-EXPOSE 8050
-# CMD [ "python3", "-m" , "dashboard.py"]
+RUN chmod +x api.sh
 
-
-# CMD [ "python3", "-m" , "dashboard.py"]
-
-CMD ./launch.sh
+CMD ./api.sh

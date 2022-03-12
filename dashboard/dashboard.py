@@ -1,12 +1,10 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
-from curses.ascii import isdigit
+
 import dash
 from dash import dcc
 from dash import html
-from numpy.core.fromnumeric import nonzero
-from numpy.lib.utils import info
 import plotly.express as px
 import pandas as pd
 import requests
@@ -16,27 +14,42 @@ from dash.dependencies import Input, Output
 import numpy as np
 import plotly.graph_objects as go
 
-# fig = px.line_polar(df, r='r', theta='theta', line_close=True)
-
 app = dash.Dash(__name__)
-
-API_URL = "http://127.0.0.1:5000/api/"
+server = app.server
+API_URL = "http://localhost:5000/api/"
 
 
 def getClientInformation(identifiant):
+    """
+    Permet de récupérer les données sur le client
+    :param identifiant:
+    :return:
+    """
     url_client_info = API_URL + "clients/{}/".format(identifiant)
     response = requests.get(url_client_info)
     return response.json()['data'][0]
 
+
 def getEtoileData(attribut):
-    response = requests.get(API_URL + "stats/etoile/{}/".format(attribut) )
+    """
+
+    :param attribut: le nom de l'attribut pour calculer les statistiques
+    :return: list
+    """
+    response = requests.get(API_URL + "stats/etoile/{}/".format(attribut))
     json = response.json()
     return json['data']
 
+
 def transformEtoileRowToDf(etoile_row):
+    """
+    Transforme notre dictionnaire en dataframe dans le bon format pour notre jeu de donnée
+    :param etoile_row: dict
+    :return: DataFrame
+    """
     df4 = pd.DataFrame(etoile_row)
     df4['r'] = df4['r'].apply(abs)
-    df4['r'] = np.log( 1 * df4['r'].values)
+    df4['r'] = np.log(1 * df4['r'].values)
     return df4
 
 
@@ -49,10 +62,17 @@ def getClientsIdentifiants() -> dict:
     json = response.json()
     return json
 
+
 def getStatsGroup(attribut):
-    response = requests.get(API_URL + "stats/{}/".format(attribut) )
+    """
+
+    :param attribut: L'atttribut pour calculer les statistiques
+    :return: list
+    """
+    response = requests.get(API_URL + "stats/{}/".format(attribut))
     json = response.json()
     return json['data']
+
 
 def getOptionsClientsIdentifiants():
     """
@@ -70,6 +90,11 @@ def getOptionsClientsIdentifiants():
 
 
 def getTitreGrapheSelonValeur(valeur):
+    """
+    Selon la valeur passé retourne le titre adéquat
+    :param valeur:
+    :return:
+    """
     if valeur == "ORGANIZATION_TYPE":
         return "Graphique de remboursement selon le secteur d'activité"
     elif valeur == "CODE_GENDER":
@@ -80,36 +105,48 @@ def getTitreGrapheSelonValeur(valeur):
         return "Graphique de remboursement selon le type de maison"
     elif valeur == "NAME_INCOME_TYPE":
         return "Graphique de remboursement selon le type de revenu"
-    else: 
+    else:
         return "Titre non défini"
-        
+
 
 def ajoutFigureEtoileRemboursement(fig, df):
+    """
+
+    :param fig: l'objet figure de dash
+    :param df: DataFrame
+    :return:
+    """
     fig.add_trace(go.Scatterpolar(
-      r=df['r'].values,
-      theta=df['theta'].values,
-      fill='toself',
-      name='Clients qui ont pas remboursés leur prêt'
+        r=df['r'].values,
+        theta=df['theta'].values,
+        fill='toself',
+        name='Clients qui ont pas remboursés leur prêt'
     ))
-    
+
+
 def ajoutFigureEtoileNonRembourse(fig, df):
-      fig.add_trace(go.Scatterpolar(
-      r=df['r'].values,
-      theta=df['theta'].values,
-      fill='toself',
-      name='Clients qui n\'ont pas remboursés leur prêt'
+    fig.add_trace(go.Scatterpolar(
+        r=df['r'].values,
+        theta=df['theta'].values,
+        fill='toself',
+        name='Clients qui n\'ont pas remboursés leur prêt'
     ))
-      
+
+
 def ajoutFigureEtoileNotreClient(fig, df):
-      fig.add_trace(go.Scatterpolar(
-      r=df['r'].values,
-      theta=df['theta'].values,
-      fill='toself',
-      name='Notre client'
+    fig.add_trace(go.Scatterpolar(
+        r=df['r'].values,
+        theta=df['theta'].values,
+        fill='toself',
+        name='Notre client'
     ))
 
 
 def getDataFrameClientsIdentifiants():
+    """
+    Récupére tous les identifiants des clients
+    :return:
+    """
     json = getClientsIdentifiants()
     return pd.DataFrame(json['data'])
 
@@ -130,8 +167,6 @@ ajoutFigureEtoileRemboursement(etoile_figure, df_etoile1)
 ajoutFigureEtoileNonRembourse(etoile_figure, df_etoile2)
 ajoutFigureEtoileNotreClient(etoile_figure, df_etoile3)
 
-
-      
 # print(info_client)
 print("donnée chargé")
 # df_clients_identifiants = getDataFrameClientsIdentifiants()
@@ -142,16 +177,16 @@ print("donnée chargé")
 
 columns_datable = [
     {
-     "name": "Sexe",
-     "id":  "CODE_GENDER"
+        "name": "Sexe",
+        "id": "CODE_GENDER"
     },
-     {
-     "name": "Status",
-     "id":  "NAME_FAMILY_STATUS"
+    {
+        "name": "Status",
+        "id": "NAME_FAMILY_STATUS"
     },
-      {
-     "name": "Education",
-     "id":  "NAME_EDUCATION_TYPE"
+    {
+        "name": "Education",
+        "id": "NAME_EDUCATION_TYPE"
     },
     {
         "name": "Annuité",
@@ -161,7 +196,7 @@ columns_datable = [
         "name": "Crédit",
         "id": "AMT_CREDIT",
     },
-      {
+    {
         "name": "Revenus",
         "id": "AMT_INCOME_TOTAL",
     },
@@ -179,10 +214,10 @@ columns_datable = [
 # print(info_client)
 
 app.layout = html.Div(children=[
-    
+
     html.Div(
         className='n-header',
-        children= [
+        children=[
             html.H1(children='Tableau de bord - Accord crédit '),
             html.Div(children=[
                 dcc.Dropdown(
@@ -193,15 +228,15 @@ app.layout = html.Div(children=[
             ]),
         ]
     ),
-   
+
     html.Div(
-        className = 'n-global-stats',
-        children = [
+        className='n-global-stats',
+        children=[
             dcc.Store(id='second-value'),
             dcc.Store(id='intermediate-value'),
-            html.Div(className='n-card', children = 
+            html.Div(className='n-card', children=
             [
-                html.Div(className= 'n-card-wrapper', children = 
+                html.Div(className='n-card-wrapper', children=
                 [
                     html.Div(
                         className='n-card-title',
@@ -212,7 +247,7 @@ app.layout = html.Div(children=[
                     ),
                     html.Div(
                         id="n-proba",
-                        className= 'n-card-value',
+                        className='n-card-value',
                         children=
                         '''
                         
@@ -220,9 +255,9 @@ app.layout = html.Div(children=[
                     ),
                 ]),
             ]),
-            html.Div(className='n-card', children = 
+            html.Div(className='n-card', children=
             [
-                html.Div(className= 'n-card-wrapper', children = 
+                html.Div(className='n-card-wrapper', children=
                 [
                     html.Div(
                         className='n-card-title',
@@ -233,16 +268,16 @@ app.layout = html.Div(children=[
                     ),
                     html.Div(
                         id="n-annuite",
-                        className= 'n-card-value',
+                        className='n-card-value',
                         children=
                         '''
                         ''' + str(info_client['AMT_ANNUITY'])
                     ),
                 ]),
             ]),
-            html.Div(className='n-card', children = 
+            html.Div(className='n-card', children=
             [
-                html.Div(className= 'n-card-wrapper', children = 
+                html.Div(className='n-card-wrapper', children=
                 [
                     html.Div(
                         className='n-card-title',
@@ -253,7 +288,7 @@ app.layout = html.Div(children=[
                     ),
                     html.Div(
                         id="n-income",
-                        className= 'n-card-value',
+                        className='n-card-value',
                         children=
                         '''
                         ''' + str(info_client['AMT_INCOME_TOTAL'])
@@ -263,73 +298,74 @@ app.layout = html.Div(children=[
         ]
     ),
     html.Div(
-      className="n-card n-container-info-clients",
-      children = [
-        html.Div(
-            className='n-card-title',
-            children='''
+        className="n-card n-container-info-clients",
+        children=[
+            html.Div(
+                className='n-card-title',
+                children='''
             Informations clients
         '''),
-        dash_table.DataTable(
-            id='table',
-            columns=columns_datable,
-            data=[info_client],
-        ),
-      ]   
+            dash_table.DataTable(
+                id='table',
+                columns=columns_datable,
+                data=[info_client],
+            ),
+        ]
     ),
     dcc.Tabs(
-        className= "n-tabs",
+        className="n-tabs",
         children=[
             dcc.Tab(
                 label='Comparaison autre clients',
-                children = [
-                         dcc.Dropdown(
-                            id='test-dropdown',
-                            options=[
-                                {
-                                    "label": "Secteur d'activité",
-                                    "value": "ORGANIZATION_TYPE",
-                                },
-                                {
-                                    "label": "Genre",
-                                    "value": "CODE_GENDER",
-                                },
-                                {
-                                    "label": "Type de revenu",
-                                    "value": "NAME_INCOME_TYPE",
-                                },
-                                {
-                                    "label": "Niveau d'éducation",
-                                    "value": "NAME_EDUCATION_TYPE",
-                                },
-                                {
-                                    "label": "Type de maison",
-                                    "value": "HOUSETYPE_MODE",
-                                } 
-                                # # {
-                                #     "label": "Niveau de revenu",
-                                #     "value": "revenu",
-                                # }
-                            ],
-                            value='CODE_GENDER'
-                        ),
-                        html.Div(
-                            className="n-secteur",
-                            children = [
-                                dcc.Graph(id="etoile_chart", figure=etoile_figure),
-                                dcc.Graph(
-                                    id="fig_chart",
-                                    figure= px.bar(stats_gender, x="CODE_GENDER", y="value", color="TARGET", title=getTitreGrapheSelonValeur("CODE_GENDER"), text = "percentage")
-                                )
-                            ]
-                        ),
+                children=[
+                    dcc.Dropdown(
+                        id='test-dropdown',
+                        options=[
+                            {
+                                "label": "Secteur d'activité",
+                                "value": "ORGANIZATION_TYPE",
+                            },
+                            {
+                                "label": "Genre",
+                                "value": "CODE_GENDER",
+                            },
+                            {
+                                "label": "Type de revenu",
+                                "value": "NAME_INCOME_TYPE",
+                            },
+                            {
+                                "label": "Niveau d'éducation",
+                                "value": "NAME_EDUCATION_TYPE",
+                            },
+                            {
+                                "label": "Type de maison",
+                                "value": "HOUSETYPE_MODE",
+                            }
+                            # # {
+                            #     "label": "Niveau de revenu",
+                            #     "value": "revenu",
+                            # }
+                        ],
+                        value='CODE_GENDER'
+                    ),
+                    html.Div(
+                        className="n-secteur",
+                        children=[
+                            dcc.Graph(id="etoile_chart", figure=etoile_figure),
+                            dcc.Graph(
+                                id="fig_chart",
+                                figure=px.bar(stats_gender, x="CODE_GENDER", y="value", color="TARGET",
+                                              title=getTitreGrapheSelonValeur("CODE_GENDER"), text="percentage")
+                            )
+                        ]
+                    ),
                 ]
             ),
             dcc.Tab(
                 label='Interpretabilité',
-                children = [
-                     html.H3(
-                      children = '''
+                children=[
+                    html.H3(
+                        children='''
                                Explications du modéle
                             '''
                     ),
@@ -343,12 +379,14 @@ app.layout = html.Div(children=[
 ])
 import json
 
+
 @app.callback(
     Output('intermediate-value', 'data'),
     Input('demo-dropdown', 'value'))
 def clean_data(value):
     info_client = getClientInformation(value)
     return json.dumps(info_client)
+
 
 # n-income n-annuite
 @app.callback(
@@ -358,12 +396,14 @@ def update_card_annuite(my_json):
     data = json.loads(my_json)
     return data['AMT_ANNUITY']
 
+
 @app.callback(
     Output('n-income', 'children'),
     Input('intermediate-value', 'data'))
 def update_card_annuite(my_json):
     data = json.loads(my_json)
     return data['AMT_INCOME_TOTAL']
+
 
 @app.callback(
     Output('n-proba', 'children'),
@@ -373,15 +413,16 @@ def update_card_annuite(my_json):
     score = data['score']
     return "{:.2f}".format(score)
 
+
 @app.callback(
-    Output('table', 'data'), 
+    Output('table', 'data'),
     Input('intermediate-value', 'data')
-    )
+)
 def update_table(my_json):
     data = json.loads(my_json)
     return [data]
-    
-    
+
+
 @app.callback(
     Output('fig_chart', 'figure'),
     Input('test-dropdown', 'value')
@@ -389,13 +430,14 @@ def update_table(my_json):
 def update_barchart(attribut):
     data = getStatsGroup(attribut)
     df_temp = pd.DataFrame(data)
-    return px.bar(df_temp, x=attribut, y="value", color="TARGET", title=getTitreGrapheSelonValeur(attribut), text = "percentage")
+    return px.bar(df_temp, x=attribut, y="value", color="TARGET", title=getTitreGrapheSelonValeur(attribut),
+                  text="percentage")
 
 
 @app.callback(
-    Output('etoile_chart', 'figure'), 
+    Output('etoile_chart', 'figure'),
     Input('demo-dropdown', 'value')
-)   
+)
 def update_etoile_char(id_client):
     etoile_data = getEtoileData(id_client)
 
@@ -408,7 +450,9 @@ def update_etoile_char(id_client):
     ajoutFigureEtoileNonRembourse(etoile_figure, df_etoile2)
     ajoutFigureEtoileNotreClient(etoile_figure, df_etoile3)
     return etoile_figure
+
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8050))
     print("avant lancement serveur dashboard sur le port " + str(port))
-    app.run_server(debug=False, port = port)
+    app.run_server(debug=False, port=port)

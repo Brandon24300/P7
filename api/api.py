@@ -1,95 +1,64 @@
-from typing import Optional
-
-import pandas as pd
-
-from flask import Flask, render_template, jsonify
+from flask import Flask, jsonify
 from flask import request
-import joblib
-import os 
-import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from imblearn.over_sampling import SMOTE
-import joblib
-import seaborn as sns
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import f_classif
-from sklearn.metrics import accuracy_score, precision_score, classification_report
-from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import KFold
-from sklearn.metrics import roc_auc_score
-from sklearn.feature_selection import f_classif
-from sklearn.model_selection import GridSearchCV
-from sklearn.pipeline import make_pipeline
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-
-import lightgbm as lgb
-import gc
-
-
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.impute import SimpleImputer
+import os
+import pandas as pd
+import joblib
 
-
-import matplotlib.pyplot as plt
-from sklearn import metrics
 
 def transform(app_train):
+    # Drop the target from the training data
+    columnsSupp = []
 
-  # Drop the target from the training data
-  columnsSupp = []
+    # if 'SK_ID_CURR' in app_train:
+    #     columnsSupp.append('SK_ID_CURR')
 
-  # if 'SK_ID_CURR' in app_train:
-  #     columnsSupp.append('SK_ID_CURR')
+    if 'TARGET' in app_train:
+        columnsSupp.append('TARGET')
 
+    if len(columnsSupp) > 0:
+        train = app_train.drop(columns=columnsSupp)
+    else:
+        train = app_train
 
-  if 'TARGET' in app_train:
-      columnsSupp.append('TARGET')
+    # train = app_train.drop(columns = columnsSupp)
 
-  if len(columnsSupp) > 0:
-    train = app_train.drop(columns = columnsSupp)
-  else:
-    train = app_train
-      
-  # train = app_train.drop(columns = columnsSupp)
-  
-  features_training = train.columns.values
+    features_training = train.columns.values
 
-  # Feature names
-  features = list(train.columns)
+    # Feature names
+    features = list(train.columns)
 
-  # Copy of the testing data
+    # Copy of the testing data
 
-  # Median imputation of missing values
-  imputer = SimpleImputer(strategy = 'median')
+    # Median imputation of missing values
+    imputer = SimpleImputer(strategy='median')
 
-  # Scale each feature to 0-1
-  scaler = MinMaxScaler(feature_range = (0, 1))
+    # Scale each feature to 0-1
+    scaler = MinMaxScaler(feature_range=(0, 1))
 
-  # Fit on the training data
-  imputer.fit(train)
+    # Fit on the training data
+    imputer.fit(train)
 
-  # Transform both training and testing data
-  train = imputer.transform(train)
-  # Repeat with the scaler
-  scaler.fit(train)
-  # X = scaler.transform(train)
-  # y = app_train['TARGET'].values 
-  X = scaler.transform(train)
-  y = app_train['TARGET']
-  
-  X = pd.DataFrame(data=X, columns=features_training) 
-  
-  return X, y, features_training
+    # Transform both training and testing data
+    train = imputer.transform(train)
+    # Repeat with the scaler
+    scaler.fit(train)
+    # X = scaler.transform(train)
+    # y = app_train['TARGET'].values
+    X = scaler.transform(train)
+    y = app_train['TARGET']
+
+    X = pd.DataFrame(data=X, columns=features_training)
+
+    return X, y, features_training
 
 
 # Chargemnt des données
 input_data_dir = os.path.dirname(os.path.realpath(__file__)) + "/../data/"
 input_data_cleaned_dir = os.path.dirname(os.path.realpath(__file__)) + "/../data_cleaned/"
-df = pd.read_csv( input_data_dir + 'application_train.csv', nrows=5000)
-df_cleaned = pd.read_csv( input_data_cleaned_dir + 'app_train_cleaned.csv', nrows=5000)
+df = pd.read_csv(input_data_dir + 'application_train.csv', nrows=5000)
+df_cleaned = pd.read_csv(input_data_cleaned_dir + 'app_train_cleaned.csv', nrows=5000)
 # df = df.sample(n=10000)
 
 # Chargement du modéle
@@ -108,7 +77,6 @@ df = df[df['DAYS_EMPLOYED'] < 100000]
 # print(df)
 # Lancement du serveur 
 app = Flask(__name__)
-
 
 
 @app.route('/api/clients/')
@@ -168,21 +136,28 @@ def safe_cast(val, to_type, default=None):
 @app.route('/api/clients/<client_id>/')
 def client_info(client_id):
     result = df[df['SK_ID_CURR'] == safe_cast(client_id, int, 0)]
+    my_cols = [
+        "score", "TARGET", "ORGANIZATION_TYPE", "OCCUPATION_TYPE", "NAME_HOUSING_TYPE", "NAME_INCOME_TYPE", "NAME_EDUCATION_TYPE",
+        "NAME_CONTRACT_TYPE", "NAME_FAMILY_STATUS", "HOUSETYPE_MODE", "CODE_GENDER", "AMT_ANNUITY", "AMT_CREDIT", "AMT_INCOME_TOTAL"
+    ]
+
+    result = result[my_cols]
     return jsonify({
         'status': 'ok',
         'data': result.to_dict(orient='records')
     })
-    
+
+
 @app.route('/api/stats/<attribut>/')
 def client_stat_group(attribut):
     cols = []
-    if(attribut == "CODE_GENDER"):
+    if (attribut == "CODE_GENDER"):
         cols = ["CODE_GENDER", 'TARGET']
     elif attribut == "ORGANIZATION_TYPE":
         cols = ["ORGANIZATION_TYPE", 'TARGET']
     elif attribut == "NAME_EDUCATION_TYPE":
-          cols = ["NAME_EDUCATION_TYPE", 'TARGET']
-    elif attribut == "HOUSETYPE_MODE": 
+        cols = ["NAME_EDUCATION_TYPE", 'TARGET']
+    elif attribut == "HOUSETYPE_MODE":
         cols = ["HOUSETYPE_MODE", 'TARGET']
     elif attribut == "NAME_INCOME_TYPE":
         cols = ["NAME_INCOME_TYPE", 'TARGET']
@@ -198,16 +173,18 @@ def client_stat_group(attribut):
         'data': records
     })
 
+
 def rename_target_values(df):
     df['TARGET'] = df['TARGET'].replace([0, 1, 2], ["Renboursé", "Non-renboursé", "Notre client"])
     return df
 
+
 @app.route('/api/stats/etoile/<id_client>/')
 def client_etoile(id_client):
     cols = [
-    "DAYS_BIRTH", "DAYS_EMPLOYED", "AMT_ANNUITY", "AMT_CREDIT"
+        "DAYS_BIRTH", "DAYS_EMPLOYED", "AMT_ANNUITY", "AMT_CREDIT"
     ]
-    
+
     # df_filtered = df[df['SK_ID_CURR'] != id_client]
     # result = df_filtered.groupby("TARGET")[cols].mean().reset_index()
     id_client = int(id_client)
@@ -219,12 +196,13 @@ def client_etoile(id_client):
     result = result.drop("TARGET", axis=1)
     records = result.to_dict(orient='records')
     records = changeFormatOutput(records)
-    
+
     return jsonify({
         'status': 'ok',
         'data': records
     })
-    
+
+
 def sum_column(colonne, data):
     compteur = {}
     for row in data:
@@ -234,19 +212,21 @@ def sum_column(colonne, data):
         compteur[cle] = value
     return compteur
 
+
 def calcul_pourcentage(colonne, data):
     compteur = sum_column(colonne, data)
     for row in data:
         cle = row[colonne]
         value = compteur[cle]
-        result =  round(100 * (row["value"] / value), 2)
+        result = round(100 * (row["value"] / value), 2)
         row['percentage'] = result
     return data
-    
+
+
 # @app.route('/api/clients/score/',  methods = ['POST'])
 # def all_client_score():
 #     return None
-    
+
 
 # @app.route('/api/clients/<client_id>/score/')
 # def client_score(client_id):
@@ -263,9 +243,8 @@ def calcul_pourcentage(colonne, data):
 #         'status': 'ok',
 #         'data': result.to_dict(orient='records')
 #     })
-    
-    
-    
+
+
 def changeFormatOutput(data):
     output = []
     for row in data:
@@ -275,7 +254,6 @@ def changeFormatOutput(data):
         }
         output.append(rowOutput)
     return output
-        
 
 
 if __name__ == "__main__":
